@@ -1,4 +1,5 @@
 import 'package:bodysyncapp/models/gymUser.dart';
+import 'package:bodysyncapp/models/userInjury.dart';
 import 'package:bodysyncapp/models/userInjuryStatus.dart';
 import 'package:bodysyncapp/services/login.service.dart';
 import 'package:flutter/material.dart';
@@ -79,6 +80,10 @@ class _MusclePainLogScreenState extends State<MusclePainLogScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _buildBody(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _selectInjury,
+        child: Icon(Icons.add),
+      ),
     );
   }
 
@@ -132,6 +137,10 @@ class _MusclePainLogScreenState extends State<MusclePainLogScreen> {
               return ListTile(
                 title: Text(userInjuryStatus.userInjury.injuryName),
                 subtitle: Text(userInjuryStatus.isActive ? 'Activa' : 'Inactiva'),
+                trailing: ElevatedButton(
+                  onPressed: () => _toggleInjuryStatus(index),
+                  child: Text(userInjuryStatus.isActive ? 'Activar' : 'Desactivar'),
+                ),
                 // Customize ListTile appearance as needed
               );
             },
@@ -149,4 +158,94 @@ class _MusclePainLogScreenState extends State<MusclePainLogScreen> {
       ),
     );
   }
+
+ void _selectInjury() {
+  showModalBottomSheet(
+    context: context,
+    builder: (BuildContext context) {
+      return FutureBuilder<List<UserInjury>>(
+        future: UserService().listUserInjuries(),
+        builder: (context, userInjuriesSnapshot) {
+          if (userInjuriesSnapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (userInjuriesSnapshot.hasError) {
+            return Center(
+              child: Text('Error: ${userInjuriesSnapshot.error}'),
+            );
+          } else {
+            final List<UserInjury> allUserInjuries = userInjuriesSnapshot.data ?? [];
+            return FutureBuilder<List<UserInjuryStatus>>(
+              future: _fetchUserInjuryStatus(),
+              builder: (context, userInjuryStatusSnapshot) {
+                if (userInjuryStatusSnapshot.connectionState == ConnectionState.waiting) {
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else if (userInjuryStatusSnapshot.hasError) {
+                  return Center(
+                    child: Text('Error: ${userInjuryStatusSnapshot.error}'),
+                  );
+                } else {
+                  final List<UserInjuryStatus> userInjuryStatusList = userInjuryStatusSnapshot.data ?? [];
+                  final List<int> existingUserInjuryIds = userInjuryStatusList.map((status) => status.userInjury.id).toList();
+                  final List<UserInjury> filteredInjuries = allUserInjuries.where((injury) => !existingUserInjuryIds.contains(injury.id)).toList();
+                  return Container(
+                    height: 200,
+                    child: ListView.builder(
+                      itemCount: filteredInjuries.length,
+                      itemBuilder: (context, index) {
+                        final userInjury = filteredInjuries[index];
+                        return ListTile(
+                          title: Text(userInjury.injuryName),
+                          onTap: () {
+                            // Here you can call the method to add the selected injury status
+                            UserService().addUserInjuryStatus(
+                              userInjury.id,
+                              true, // Set isActive as needed
+                            ).then((_) {
+                              // Refresh data after adding injury status
+                              _fetchData();
+                              Navigator.pop(context);
+                            }).catchError((error) {
+                              _showSnackBar('Error adding injury status: $error');
+                            });
+                          },
+                        );
+                      },
+                    ),
+                  );
+                }
+              },
+            );
+          }
+        },
+      );
+    },
+  );
+}
+
+
+ void _toggleInjuryStatus(int index) {
+  setState(() {
+    _userInjuryStatusList[index].isActive = !_userInjuryStatusList[index].isActive;
+  });
+  // Obtén el ID correcto del estado de lesión del usuario
+  int userInjuryStatusId = _userInjuryStatusList[index].id; // Obtén el ID del userInjuryStatus
+  // Llama al método para actualizar el estado de lesión en el backend
+  UserService().updateUserInjuryStatus(
+    userInjuryStatusId,
+    !_userInjuryStatusList[index].isActive,
+  ).then((_) {
+    _showSnackBar('Estado de lesión actualizado exitosamente');
+  }).catchError((error) {
+    setState(() {
+      _userInjuryStatusList[index].isActive = !_userInjuryStatusList[index].isActive;
+    });
+    _showSnackBar('Error actualizando estado de lesión: $error');
+  });
+}
+
+
 }

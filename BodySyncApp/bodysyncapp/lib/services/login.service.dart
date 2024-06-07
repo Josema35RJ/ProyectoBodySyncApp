@@ -4,7 +4,9 @@ import 'package:bodysyncapp/models/classReservation.dart';
 import 'package:bodysyncapp/models/exercise.dart';
 import 'package:bodysyncapp/models/gymClass.dart';
 import 'package:bodysyncapp/models/gymUser.dart';
+import 'package:bodysyncapp/models/mealLog.dart';
 import 'package:bodysyncapp/models/routine.dart';
+import 'package:bodysyncapp/models/userInjury.dart';
 import 'package:bodysyncapp/models/userInjuryStatus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -12,6 +14,8 @@ import 'package:http/http.dart' as http;
 
 class UserService extends ChangeNotifier {
   final String baseURL = 'https://proyectointegradobodysyncapi.onrender.com';
+  final String weatherApiKey =
+      'd83a6e26762bebf3bcf1d6c18f643bbb'; // clave API de OpenWeatherMap
   final storage = const FlutterSecureStorage();
 
   static String userEmail = '';
@@ -22,7 +26,7 @@ class UserService extends ChangeNotifier {
   String user = '';
 
   Future<String> register(GymUser gymUser) async {
-  print(gymUser.toJson());
+    print(gymUser.toJson());
     final url = Uri.parse('$baseURL/register');
     try {
       final response = await http.post(
@@ -31,7 +35,6 @@ class UserService extends ChangeNotifier {
           'Content-type': 'application/json',
           'Accept': 'application/json',
         },
-        
         body: json.encode(gymUser.toJson()),
       );
 
@@ -357,117 +360,117 @@ class UserService extends ChangeNotifier {
   }
 
   // Método para actualizar los días de asistencia
-Future<void> updateAttendanceDays(Set<DateTime> attendanceDays) async {
-  try {
-    final url = Uri.parse('$baseURL/apiGymUser/updateAttendanceDays/$userId');
-    final response = await http.put(
-      url,
-      headers: {
-        'Content-type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer ${await storage.read(key: 'token')}',
-      },
-      body: json.encode(
-        attendanceDays.map((day) => day.toIso8601String().substring(0, 10)).toList(),
-      ),
-    );
+  Future<void> updateAttendanceDays(Set<DateTime> attendanceDays) async {
+    try {
+      final url = Uri.parse('$baseURL/apiGymUser/updateAttendanceDays/$userId');
+      final response = await http.put(
+        url,
+        headers: {
+          'Content-type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${await storage.read(key: 'token')}',
+        },
+        body: json.encode(
+          attendanceDays
+              .map((day) => day.toIso8601String().substring(0, 10))
+              .toList(),
+        ),
+      );
 
-    final decoded = json.decode(response.body);
-    if (response.statusCode == 200 && decoded['success'] == true) {
-      // Handle success here
-    } else {
-      throw Exception(decoded['message'] ?? 'Error updating attendance days');
-    }
-  } catch (e) {
-    throw Exception('Error updating attendance days: $e');
-  }
-}
-
-
-
-Future<int> countClassMusculationUsers() async {
-  final url = Uri.parse('$baseURL/apiGymUser/CountMusculationUsers');
-  try {
-    final response = await http.get(
-      url,
-      headers: {
-        'Content-type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer ${await storage.read(key: 'token')}',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      return int.parse(response.body); // Devuelve directamente el cuerpo como entero
-    } else {
-      throw Exception('Error al contar usuarios de musculación: ${response.statusCode}');
-    }
-  } catch (e) {
-    throw Exception('Error contando usuarios de musculación: $e');
-  }
-}
-
- 
-Future<List<UserInjuryStatus>> listUserInjuryStatus() async {
-  final url = Uri.parse('$baseURL/apiGymUser/UserInjuryStatus/$userId');
-  try {
-    final token = await storage.read(key: 'token');
-    final response = await http.get(
-      url,
-      headers: {
-        'Content-type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode == 200) {
       final decoded = json.decode(response.body);
-      if (decoded['success'] == true && decoded['data'] != null) {
-      
-        List<dynamic> userInjuryStatusData = decoded['data'];
-       
-        List<UserInjuryStatus> userInjuryStatus =
-            userInjuryStatusData.map<UserInjuryStatus>((userInjuryStatusData ) {
-                 
-          return UserInjuryStatus.fromJson(userInjuryStatusData );
-        }).toList();
-        return userInjuryStatus;
+      if (response.statusCode == 200 && decoded['success'] == true) {
+        // Handle success here
       } else {
-        throw Exception('Error fetching user injury status: ${decoded['message']}');
+        throw Exception(decoded['message'] ?? 'Error updating attendance days');
       }
-    } else {
-      throw Exception('Error fetching user injury status: ${response.statusCode}');
+    } catch (e) {
+      throw Exception('Error updating attendance days: $e');
     }
-  } catch (e) {
-    throw Exception('Error connecting to server: $e');
   }
-}
 
+  Future<int> countClassMusculationUsers() async {
+    final url = Uri.parse('$baseURL/apiGymUser/CountMusculationUsers');
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${await storage.read(key: 'token')}',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return int.parse(
+            response.body); // Devuelve directamente el cuerpo como entero
+      } else {
+        throw Exception(
+            'Error al contar usuarios de musculación: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error contando usuarios de musculación: $e');
+    }
+  }
+
+  Future<List<UserInjuryStatus>> listUserInjuryStatus() async {
+    final url = Uri.parse('$baseURL/apiGymUser/UserInjuryStatus/$userId');
+    try {
+      final token = await storage.read(key: 'token');
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final decoded = json.decode(response.body);
+        if (decoded['success'] == true && decoded['data'] != null) {
+          List<dynamic> userInjuryStatusData = decoded['data'];
+
+          List<UserInjuryStatus> userInjuryStatus = userInjuryStatusData
+              .map<UserInjuryStatus>((userInjuryStatusData) {
+            return UserInjuryStatus.fromJson(userInjuryStatusData);
+          }).toList();
+          return userInjuryStatus;
+        } else {
+          throw Exception(
+              'Error fetching user injury status: ${decoded['message']}');
+        }
+      } else {
+        throw Exception(
+            'Error fetching user injury status: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error connecting to server: $e');
+    }
+  }
 
   Future<void> addUserInjury(String userInjuryId) async {
-  final url = Uri.parse('$baseURL/apiGymUser/UserInjury/$userId');
-  try {
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer ${await storage.read(key: 'token')}',
-      },
-      body: userInjuryId, // Envía solo el userInjuryId como el cuerpo de la solicitud
-    );
+    final url = Uri.parse('$baseURL/apiGymUser/UserInjury/$userId');
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${await storage.read(key: 'token')}',
+        },
+        body:
+            userInjuryId, // Envía solo el userInjuryId como el cuerpo de la solicitud
+      );
 
-    final decoded = json.decode(response.body);
-    if (response.statusCode == 200 && decoded['success'] == true) {
-    } else {
-      throw Exception(decoded['message'] ?? 'Error adding user injury');
+      final decoded = json.decode(response.body);
+      if (response.statusCode == 200 && decoded['success'] == true) {
+      } else {
+        throw Exception(decoded['message'] ?? 'Error adding user injury');
+      }
+    } catch (e) {
+      throw Exception('Error connecting to server: $e');
     }
-  } catch (e) {
-    throw Exception('Error connecting to server: $e');
   }
-}
-
 
   Future<List<Exercise>> listExercises() async {
     final url = Uri.parse('$baseURL/apiGymUser/Exercises');
@@ -500,6 +503,83 @@ Future<List<UserInjuryStatus>> listUserInjuryStatus() async {
       throw Exception('Error connecting to server: $e');
     }
   }
+    Future<void> addMealLog( int mealLogId) async {
+    final url = Uri.parse('$baseURL/apiGymUser/addMealLog/$userId');
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${await storage.read(key: 'token')}',
+        },
+        body: json.encode({
+          'gymUserId': userId,
+          'mealLogId': mealLogId,
+        }),
+      );
+
+      final decoded = json.decode(response.body);
+      if (response.statusCode == 200 && decoded['success'] == true) {
+        print('Comida añadida con éxito');
+      } else {
+        throw Exception(decoded['message'] ?? 'Error adding meal log');
+      }
+    } catch (e) {
+      throw Exception('Error connecting to server: $e');
+    }
+  }
+
+
+  Future<void> fetchWeatherForNextFiveDays(List<DateTime> nextFiveDays,
+      Function(DateTime, String) updateWeather) async {
+    try {
+      for (DateTime day in nextFiveDays) {
+        final url =
+            'https://api.openweathermap.org/data/2.5/weather?lat=36.498959&lon=-6.270135&units=metric&appid=$weatherApiKey';
+        final response = await http.get(Uri.parse(url));
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          final weather = data['weather'][0]['description'];
+          // Llama a la función de devolución de llamada para actualizar los datos climáticos
+          updateWeather(day, weather);
+        } else {
+          print(
+              'Error al obtener los datos climáticos: ${response.statusCode}');
+        }
+      }
+    } catch (e) {
+      print('Error al obtener los datos climáticos: $e');
+    }
+  }
+
+Future<List<MealLog>> listMealLog() async {
+  final url = Uri.parse('$baseURL/apiGymUser/MealLog');
+  try {
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ${await storage.read(key: 'token')}',
+      },
+    );
+
+    final decoded = json.decode(response.body);
+    if (decoded['success'] == true && decoded['data'] != null) {
+      List<dynamic> mealLogData = decoded['data'];
+      List<MealLog> mealLogList = mealLogData.map<MealLog>((mealLogData) {
+        return MealLog.fromJson(mealLogData);
+      }).toList();
+      return mealLogList;
+    } else {
+      throw Exception(decoded['message'] ?? 'Error fetching meal logs');
+    }
+  } catch (e) {
+    throw Exception('Error connecting to server: $e');
+  }
+}
+
 
   Future<void> addUserClass(int classId) async {
     final url = Uri.parse('$baseURL/apiGymUser/addUserClass/$userId');
@@ -526,34 +606,120 @@ Future<List<UserInjuryStatus>> listUserInjuryStatus() async {
   }
 
   Future<List<GymUser>> listGymUsers() async {
-  final url = Uri.parse('$baseURL/apiGymUser/ListGymUser');
-  try {
-    final response = await http.get(
-      url,
-      headers: {
-        'Content-type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer ${await storage.read(key: 'token')}',
-      },
-    );
+    final url = Uri.parse('$baseURL/apiGymUser/ListGymUser');
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${await storage.read(key: 'token')}',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      final decoded = json.decode(response.body);
-      if (decoded['success'] == true && decoded['data'] != null) {
-        List<dynamic> gymUsersData = decoded['data'];
-        List<GymUser> gymUsers = gymUsersData.map<GymUser>((gymUserData) {
-          return GymUser.fromJson(gymUserData);
-        }).toList();
-        return gymUsers;
+      if (response.statusCode == 200) {
+        final decoded = json.decode(response.body);
+        if (decoded['success'] == true && decoded['data'] != null) {
+          List<dynamic> gymUsersData = decoded['data'];
+          List<GymUser> gymUsers = gymUsersData.map<GymUser>((gymUserData) {
+            return GymUser.fromJson(gymUserData);
+          }).toList();
+          return gymUsers;
+        } else {
+          throw Exception(decoded['message'] ?? 'Error fetching gym users');
+        }
       } else {
-        throw Exception(decoded['message'] ?? 'Error fetching gym users');
+        throw Exception('Server error: ${response.statusCode}');
       }
-    } else {
-      throw Exception('Server error: ${response.statusCode}');
+    } catch (e) {
+      throw Exception('Error connecting to server: $e');
     }
-  } catch (e) {
-    throw Exception('Error connecting to server: $e');
   }
-}
 
+  Future<void> addUserInjuryStatus(int userInjuryId, bool isActive) async {
+    final url = Uri.parse('$baseURL/apiGymUser/addUserInjuryStatus/$userId');
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${await storage.read(key: 'token')}',
+        },
+        body: json.encode({
+          'gymUserId': int.parse(userId),
+          'userInjuryId': userInjuryId,
+          'isActive': isActive,
+        }),
+      );
+
+      final decoded = json.decode(response.body);
+      if (response.statusCode == 200 && decoded['success'] == true) {
+        // Handle success
+      } else {
+        throw Exception(
+            decoded['message'] ?? 'Error updating user injury status');
+      }
+    } catch (e) {
+      throw Exception('Error connecting to server: $e');
+    }
+  }
+
+  Future<void> updateUserInjuryStatus(int userInjuryId, bool isActive) async {
+    final url = Uri.parse('$baseURL/apiGymUser/updateUserInjuryStatus/$userId');
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Content-type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${await storage.read(key: 'token')}',
+        },
+        body: json.encode({
+          'UserInjuryStatusId': userInjuryId,
+          'isActive': isActive,
+        }),
+      );
+
+      final decoded = json.decode(response.body);
+      if (response.statusCode == 200 && decoded['success'] == true) {
+        // Handle success
+      } else {
+        throw Exception(
+            decoded['message'] ?? 'Error updating user injury status');
+      }
+    } catch (e) {
+      throw Exception('Error connecting to server: $e');
+    }
+  }
+
+  Future<List<UserInjury>> listUserInjuries() async {
+    final url = Uri.parse('$baseURL/apiGymUser/UserInjury');
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${await storage.read(key: 'token')}',
+        },
+      );
+
+      final decoded = json.decode(response.body);
+      if (response.statusCode == 200 &&
+          decoded['success'] == true &&
+          decoded['data'] != null) {
+        List<dynamic> userInjuriesData = decoded['data'];
+        List<UserInjury> userInjuries =
+            userInjuriesData.map<UserInjury>((userInjuryData) {
+          return UserInjury.fromJson(userInjuryData);
+        }).toList();
+        return userInjuries;
+      } else {
+        throw Exception(decoded['message'] ?? 'Error fetching user injuries');
+      }
+    } catch (e) {
+      throw Exception('Error connecting to server: $e');
+    }
+  }
 }

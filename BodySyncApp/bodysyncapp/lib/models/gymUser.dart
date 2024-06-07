@@ -48,7 +48,7 @@ class GymUser {
   List<MusclePainLog>? musclePainLogs;
   int? attendance;
   Set<UserInjury>? injuriesList;
-   List<GymUser>? gymBros;
+  List<GymUser>? gymBros;
   bool? churn;
   String? token;
 
@@ -90,7 +90,7 @@ class GymUser {
     this.musclePainLogs,
     this.attendance,
     this.injuriesList,
-      this.gymBros,
+    this.gymBros,
     this.churn,
     this.token,
   });
@@ -124,8 +124,7 @@ class GymUser {
       attendanceDays: json['attendanceDays'] != null ? (json['attendanceDays'] as List).map((e) => DateTime.parse(e)).toSet() : null,
       createdDate: json['createdDate'] != null ? DateTime.parse(json['createdDate']) : null,
       updatedDate: json['updatedDate'] != null ? DateTime.parse(json['updatedDate']) : null,
-     routines: json['routines'] != null ? (json['routines'] as List).map((e) => Routine.fromJson(e)).toList() : null,
-
+      routines: json['routines'] != null ? (json['routines'] as List).map((e) => Routine.fromJson(e)).toList() : null,
       exercises: json['exercises'] != null ? (json['exercises'] as List).map((e) => Exercise.fromJson(e)).toList() : null,
       nutritionPlans: json['nutritionPlans'] != null ? (json['nutritionPlans'] as List).map((e) => NutritionPlan.fromJson(e)).toList() : null,
       achievements: json['achievements'] != null ? (json['achievements'] as List).map((e) => Achievement.fromJson(e)).toList() : null,
@@ -135,7 +134,7 @@ class GymUser {
       musclePainLogs: json['musclePainLogs'] != null ? (json['musclePainLogs'] as List).map((e) => MusclePainLog.fromJson(e)).toList() : null,
       attendance: json['attendance'] ?? 0,
       injuriesList: json['injuriesList'] != null ? (json['injuriesList'] as List).map((e) => UserInjury.fromJson(e)).toSet() : null,
-       gymBros: json['gymBros'] != null ? (json['gymBros'] as List).map((e) => GymUser.fromJson(e)).toList() : null,
+      gymBros: json['gymBros'] != null ? (json['gymBros'] as List).map((e) => GymUser.fromJson(e)).toList() : null,
       churn: json['churn'],
       token: json['token'],
     );
@@ -180,9 +179,10 @@ class GymUser {
       'musclePainLogs': musclePainLogs?.map((e) => e.toJson()).toList(),
       'attendance': attendance,
       'injuriesList': injuriesList?.map((e) => e.toJson()).toList(),
-        'gymBros': gymBros?.map((e) => e.toJson()).toList(),
+      'gymBros': gymBros?.map((e) => e.toJson()).toList(),
       'churn': churn,
       'token': token,
     };
   }
 }
+

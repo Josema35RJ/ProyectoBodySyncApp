@@ -15,11 +15,11 @@ class MealLog {
 
   factory MealLog.fromJson(Map<String, dynamic> json) {
     return MealLog(
-      id: json['id'],
-      gymUserId: json['gymUserId'],
+      id: json['id'] ?? 0,
+      gymUserId: json['gymUserId'] ?? 0,
       mealDate: DateTime.tryParse(json['mealDate'] ?? '') ?? DateTime.now(),
-      mealDescription: json['mealDescription'],
-      caloriesConsumed: json['caloriesConsumed'],
+      mealDescription: json['mealDescription'] ?? '',
+      caloriesConsumed: json['caloriesConsumed'] ?? 0,
     );
   }
 

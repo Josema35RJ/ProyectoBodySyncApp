@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bodysyncapp/models/exercise.dart';
 import 'package:bodysyncapp/models/gymClass.dart';
 import 'package:bodysyncapp/models/gymUser.dart';
+import 'package:bodysyncapp/models/mealLog.dart';
 import 'package:bodysyncapp/presentation/miembros/gymBrosScreen.dart';
 import 'package:bodysyncapp/presentation/miembros/musclePainLogScreen.dart';
 import 'package:bodysyncapp/services/login.service.dart';
@@ -137,63 +138,64 @@ class _GymUserScreenState extends State<GymUserScreen> {
     );
   }
 
-  Widget _buildCalendarSection(GymUser gymUser) {
-    return Card(
-      elevation: 4,
-      color: Colors.grey[200],
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              'Calendario de Asistencia',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue,
-              ),
+Widget _buildCalendarSection(GymUser gymUser) {
+  return Card(
+    elevation: 4,
+    color: Colors.grey[200],
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text(
+            'Calendario de Asistencia',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue,
             ),
           ),
-          TableCalendar(
-            calendarFormat: CalendarFormat.month,
-            focusedDay: DateTime.now(),
-            firstDay: DateTime.utc(2022, 1, 1),
-            lastDay: DateTime.utc(2024, 12, 31),
-            selectedDayPredicate: (day) {
-              return gymUser.attendanceDays?.contains(day) ?? false && !isPastDay(day);
-            },
-            eventLoader: (day) {
-              List<dynamic> events = [];
-              if (gymUser.attendanceDays?.contains(day) ?? false) {
-                events.add('Asistencia al gimnasio');
-              }
-              return events;
-            },
-            onDaySelected: (selectedDay, focusedDay) async {
-              if (!isPastDay(selectedDay)) {
-                setState(() {
-                  if (gymUser.attendanceDays?.contains(selectedDay) ?? false) {
-                    gymUser.attendanceDays?.remove(selectedDay);
-                  } else {
-                    gymUser.attendanceDays?.add(selectedDay);
-                  }
-                });
-                try {
-                  await UserService().updateAttendanceDays(gymUser.attendanceDays!);
-                } catch (e) {
-                  print('Error actualizando días de asistencia: $e');
+        ),
+        TableCalendar(
+          calendarFormat: CalendarFormat.month,
+          focusedDay: DateTime.now(),
+          firstDay: DateTime.utc(2022, 1, 1),
+          lastDay: DateTime.utc(2024, 12, 31),
+          selectedDayPredicate: (day) {
+            return gymUser.attendanceDays?.contains(day) ?? false && !isPastDay(day);
+          },
+          eventLoader: (day) {
+            List<dynamic> events = [];
+            if (gymUser.attendanceDays?.contains(day) ?? false) {
+              events.add('Asistencia al gimnasio');
+            }
+            return events;
+          },
+          onDaySelected: (selectedDay, focusedDay) async {
+            if (!isPastDay(selectedDay)) {
+              setState(() {
+                if (gymUser.attendanceDays?.contains(selectedDay) ?? false) {
+                  gymUser.attendanceDays?.remove(selectedDay);
+                } else {
+                  gymUser.attendanceDays?.add(selectedDay);
                 }
+              });
+              try {
+                await UserService().updateAttendanceDays(gymUser.attendanceDays!);
+              } catch (e) {
+                print('Error actualizando días de asistencia: $e');
               }
-            },
-          ),
-        ],
-      ),
-    );
-  }
+            }
+          },
+        ),
+      ],
+    ),
+  );
+}
+
 
   bool isPastDay(DateTime day) {
     final now = DateTime.now();
@@ -259,8 +261,6 @@ class _GymUserScreenState extends State<GymUserScreen> {
     ),
   );
 }
-
-
 
   Widget _buildAnnouncementsSection() {
     return Card(
@@ -647,117 +647,213 @@ Widget _buildClassesContent(GymUser gymUser) {
       ),
     );
   }
+  
+void _showAddMealDialog() async {
+  try {
+    // Llama a listMealLog para obtener la lista de comidas
+    List<MealLog> mealLogList = await UserService().listMealLog();
 
-  Widget _buildNutritionPlansSection() {
-    return FutureBuilder<GymUser?>(
-      future: _gymUserFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        } else {
-          final gymUser = snapshot.data;
-          if (gymUser == null) {
-            return const Center(
-              child: Text(
-                'No se encontraron datos del usuario del gimnasio.',
-                style: TextStyle(fontSize: 16.0),
-              ),
-            );
-          }
-          return _buildNutritionPlansContent(gymUser);
-        }
-      },
-    );
-  }
+    // Variable para almacenar la comida seleccionada
+    MealLog? selectedMeal;
 
-  Widget _buildNutritionPlansContent(GymUser gymUser) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              'Nutrición y Dieta',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue,
-              ),
+    // Crea una lista de elementos ListTile para mostrar en el diálogo
+    List<Widget> mealListTiles = mealLogList.map((meal) {
+      return ListTile(
+        title: Text(meal.mealDescription),
+        subtitle: Text(meal.caloriesConsumed.toString()),
+        onTap: () {
+          // Actualiza la comida seleccionada
+          selectedMeal = meal;
+        },
+      );
+    }).toList();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Agregar Comida'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Column(
+                  children: mealListTiles, // Mostrar la lista de comidas aquí
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 10),
-          _buildNutritionSummary(gymUser),
-          const SizedBox(height: 20),
-          _buildMealLogs(gymUser),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cierra el diálogo
+              },
+              child: Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (selectedMeal != null) {
+                  try {
+                    // Llamar al servicio addMealLog
+                    await UserService().addMealLog( selectedMeal!.id);
+                    Navigator.of(context).pop(); // Cierra el diálogo
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text('Comida añadida con éxito'),
+                    ));
+                  } catch (e) {
+                    // Manejar errores aquí, como mostrar un mensaje de error al usuario
+                    print('Error: $e');
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text('Error: $e'),
+                    ));
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('Por favor seleccione una comida'),
+                  ));
+                }
+              },
+              child: Text('Guardar'),
+            ),
+          ],
+        );
+      },
+    );
+  } catch (e) {
+    // Manejar errores aquí, como mostrar un mensaje de error al usuario
+    print('Error: $e');
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Error: $e'),
+    ));
+  }
+}
+
+
+Widget _buildNutritionPlansSection() {
+  return FutureBuilder<GymUser?>(
+    future: _gymUserFuture,
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(child: CircularProgressIndicator());
+      } else if (snapshot.hasError) {
+        return Center(child: Text('Error: ${snapshot.error}'));
+      } else {
+        final gymUser = snapshot.data;
+        if (gymUser == null) {
+          return const Center(
+            child: Text(
+              'No se encontraron datos del usuario del gimnasio.',
+              style: TextStyle(fontSize: 16.0),
+            ),
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildNutritionPlansContent(gymUser),
+            SizedBox(height: 20),
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  _showAddMealDialog(); // Llama al método para mostrar la ventana emergente.
+                },
+                child: Text('Agregar Comida'),
+              ),
+            ),
+          ],
+        );
+      }
+    },
+  );
+}
+
+Widget _buildNutritionPlansContent(GymUser gymUser) {
+  return SingleChildScrollView(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text(
+            'Nutrición y Dieta',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue,
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        _buildNutritionSummary(gymUser),
+        const SizedBox(height: 20),
+        _buildMealLogs(gymUser),
+      ],
+    ),
+  );
+}
+
+Widget _buildNutritionSummary(GymUser gymUser) {
+  if (gymUser.nutritionPlans == null || gymUser.nutritionPlans!.isEmpty) {
+    return const Center(
+      child: Text(
+        'No hay planes de nutrición disponibles.',
+        style: TextStyle(fontSize: 16.0, color: Colors.black87),
       ),
     );
+  } else {
+    return ExpansionTile(
+      title: const Text(
+        'Planes de Nutrición',
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      children: [
+        Column(
+          children: gymUser.nutritionPlans!.map((plan) {
+            return ListTile(
+              title: Text(plan.name),
+              subtitle: Text(plan.description),
+            );
+          }).toList(),
+        ),
+      ],
+    );
   }
+}
 
-  Widget _buildNutritionSummary(GymUser gymUser) {
-    if (gymUser.nutritionPlans == null || gymUser.nutritionPlans!.isEmpty) {
-      return const Center(
-        child: Text(
-          'No hay planes de nutrición disponibles.',
-          style: TextStyle(fontSize: 16.0, color: Colors.black87),
+Widget _buildMealLogs(GymUser gymUser) {
+  if (gymUser.mealLogs == null || gymUser.mealLogs!.isEmpty) {
+    return const Center(
+      child: Text(
+        'No hay registros de comidas.',
+        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+      ),
+    );
+  } else {
+    return ExpansionTile(
+      title: const Text(
+        'Registros de Comidas',
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
         ),
-      );
-    } else {
-      return ExpansionTile(
-        title: const Text(
-          'Planes de Nutrición',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+      ),
+      children: [
+        Column(
+          children: gymUser.mealLogs!.map((log) {
+            return ListTile(
+              title: Text(log.mealDescription),
+              subtitle: Text(log.caloriesConsumed.toString()),
+            );
+          }).toList(),
         ),
-        children: [
-          Column(
-            children: gymUser.nutritionPlans!.map((plan) {
-              return ListTile(
-                title: Text(plan.name),
-                subtitle: Text(plan.description),
-              );
-            }).toList(),
-          ),
-        ],
-      );
-    }
+      ],
+    );
   }
-
-  Widget _buildMealLogs(GymUser gymUser) {
-    if (gymUser.mealLogs == null || gymUser.mealLogs!.isEmpty) {
-      return const Center(
-        child: Text(
-          'No hay registros de comidas.',
-          style: TextStyle(fontSize: 16.0, color: Colors.black87),
-        ),
-      );
-    } else {
-      return ExpansionTile(
-        title: const Text(
-          'Registros de Comidas',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        children: [
-          Column(
-            children: gymUser.mealLogs!.map((log) {
-              return ListTile(
-                title: Text(log.mealDate as String),
-                subtitle: Text(log.mealDescription),
-              );
-            }).toList(),
-          ),
-        ],
-      );
-    }
-  }
+}
 
   Widget _buildAchievementsSection() {
     return FutureBuilder<GymUser?>(

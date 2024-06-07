@@ -106,8 +106,7 @@ class _GymUserScreenState extends State<GymUserScreen> {
         return Container(); // Placeholder
     }
   }
-
-  Widget _buildCalendarAndAnnouncements() {
+ Widget _buildCalendarAndAnnouncements() {
     return FutureBuilder<GymUser?>(
       future: _gymUserFuture,
       builder: (context, snapshot) {
@@ -138,63 +137,63 @@ class _GymUserScreenState extends State<GymUserScreen> {
     );
   }
 
-Widget _buildCalendarSection(GymUser gymUser) {
-  return Card(
-    elevation: 4,
-    color: Colors.grey[200],
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(16),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text(
-            'Calendario de Asistencia',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.blue,
+  Widget _buildCalendarSection(GymUser gymUser) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              'Calendario de Asistencia',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue,
+              ),
             ),
           ),
-        ),
-        TableCalendar(
-          calendarFormat: CalendarFormat.month,
-          focusedDay: DateTime.now(),
-          firstDay: DateTime.utc(2022, 1, 1),
-          lastDay: DateTime.utc(2024, 12, 31),
-          selectedDayPredicate: (day) {
-            return gymUser.attendanceDays?.contains(day) ?? false && !isPastDay(day);
-          },
-          eventLoader: (day) {
-            List<dynamic> events = [];
-            if (gymUser.attendanceDays?.contains(day) ?? false) {
-              events.add('Asistencia al gimnasio');
-            }
-            return events;
-          },
-          onDaySelected: (selectedDay, focusedDay) async {
-            if (!isPastDay(selectedDay)) {
-              setState(() {
-                if (gymUser.attendanceDays?.contains(selectedDay) ?? false) {
-                  gymUser.attendanceDays?.remove(selectedDay);
-                } else {
-                  gymUser.attendanceDays?.add(selectedDay);
-                }
-              });
-              try {
-                await UserService().updateAttendanceDays(gymUser.attendanceDays!);
-              } catch (e) {
-                print('Error actualizando días de asistencia: $e');
+          TableCalendar(
+            calendarFormat: CalendarFormat.month,
+            focusedDay: DateTime.now(),
+            firstDay: DateTime.utc(2022, 1, 1),
+            lastDay: DateTime.utc(2024, 12, 31),
+            selectedDayPredicate: (day) {
+              // Verifica si el día está en la lista de días de asistencia y si no es un día pasado.
+              return gymUser.attendanceDays?.contains(day) ?? false && !isPastDay(day);
+            },
+            eventLoader: (day) {
+              List<dynamic> events = [];
+              if (gymUser.attendanceDays?.contains(day) ?? false) {
+                events.add(Icon(Icons.check, color: Colors.green)); // Icono de checkmark verde para indicar asistencia
               }
-            }
-          },
-        ),
-      ],
-    ),
-  );
-}
+              return events;
+            },
+            onDaySelected: (selectedDay, focusedDay) async {
+              if (!isPastDay(selectedDay)) {
+                setState(() {
+                  if (gymUser.attendanceDays?.contains(selectedDay) ?? false) {
+                    gymUser.attendanceDays?.remove(selectedDay);
+                  } else {
+                    gymUser.attendanceDays?.add(selectedDay);
+                  }
+                });
+                try {
+                  await UserService().updateAttendanceDays(gymUser.attendanceDays!);
+                } catch (e) {
+                  print('Error actualizando días de asistencia: $e');
+                }
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
 
   bool isPastDay(DateTime day) {

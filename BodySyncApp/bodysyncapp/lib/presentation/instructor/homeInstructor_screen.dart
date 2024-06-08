@@ -126,10 +126,6 @@ class _HomeInstructorScreenState extends State<HomeInstructorScreen> {
                                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                                 ),
                                 const SizedBox(height: 4),
-                                Text(
-                                  'Instructor: ${clase.instructorId} ${clase.instructorId}',
-                                  style: const TextStyle(color: Colors.grey),
-                                ),
                               ],
                             ),
                             subtitle: Column(

@@ -727,7 +727,6 @@ void _showAddMealDialog() async {
   }
 }
 
-
 Widget _buildNutritionPlansSection() {
   return FutureBuilder<GymUser?>(
     future: _gymUserFuture,

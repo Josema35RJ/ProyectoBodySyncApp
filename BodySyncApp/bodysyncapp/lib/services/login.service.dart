@@ -26,7 +26,6 @@ class UserService extends ChangeNotifier {
   String user = '';
 
   Future<String> register(GymUser gymUser) async {
-    print(gymUser.toJson());
     final url = Uri.parse('$baseURL/register');
     try {
       final response = await http.post(
@@ -81,34 +80,34 @@ class UserService extends ChangeNotifier {
     }
   }
 
-  Future<List<GymClass>> getInstructorClasses(int id) async {
-    final url = Uri.parse('$baseURL/apiGymInstructor/getClases/$id');
-    try {
-      final response = await http.get(
-        url,
-        headers: {
-          'Content-type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer ${await storage.read(key: 'token')}',
-        },
-      );
+ Future<List<GymClass>> getInstructorClasses(int id) async {
 
-      final decoded = json.decode(response.body);
-      print("hola" + decoded);
-      if (decoded['success'] == true && decoded['data'] != null) {
-        List<dynamic> classesData = decoded['data'];
-        List<GymClass> classes = classesData.map<GymClass>((classData) {
-          return GymClass.fromJson(classData);
-        }).toList();
-        return classes;
-      } else {
-        throw Exception(decoded['message'] ??
-            'No hay clases disponibles para este instructor.');
-      }
-    } catch (e) {
-      throw Exception('Error al conectar con el servidor: $e');
+  final url = Uri.parse('$baseURL/apiGymInstructor/getClases/$id');
+  try {
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ${await storage.read(key: 'token')}',
+      },
+    );
+
+    final decoded = json.decode(response.body);
+    if (decoded['success'] == true && decoded['data'] != null) {
+      List<dynamic> classesData = decoded['data'];
+      List<GymClass> classes = classesData.map<GymClass>((classData) {
+        return GymClass.fromJson(classData);
+      }).toList();
+      return classes;
+    } else {
+      throw Exception(decoded['message'] ??
+          'No hay clases disponibles para este instructor.');
     }
+  } catch (e) {
+    throw Exception('Error al conectar con el servidor: $e');
   }
+}
 
   String handleRegisterError(Map<String, dynamic> decoded) {
     if (decoded['message'] == "El correo electrónico ya está registrado") {
@@ -521,7 +520,6 @@ class UserService extends ChangeNotifier {
 
       final decoded = json.decode(response.body);
       if (response.statusCode == 200 && decoded['success'] == true) {
-        print('Comida añadida con éxito');
       } else {
         throw Exception(decoded['message'] ?? 'Error adding meal log');
       }
@@ -529,7 +527,6 @@ class UserService extends ChangeNotifier {
       throw Exception('Error connecting to server: $e');
     }
   }
-
 
   Future<void> fetchWeatherForNextFiveDays(List<DateTime> nextFiveDays,
       Function(DateTime, String) updateWeather) async {
@@ -544,8 +541,6 @@ class UserService extends ChangeNotifier {
           // Llama a la función de devolución de llamada para actualizar los datos climáticos
           updateWeather(day, weather);
         } else {
-          print(
-              'Error al obtener los datos climáticos: ${response.statusCode}');
         }
       }
     } catch (e) {

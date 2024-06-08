@@ -90,7 +90,6 @@ class _HomeMemberScreenState extends State<HomeMemberScreen> {
                         ],
                       ),
                       onTap: () {
-                        // Aquí puedes manejar la acción al hacer clic en un miembro
                       },
                     ),
                   );

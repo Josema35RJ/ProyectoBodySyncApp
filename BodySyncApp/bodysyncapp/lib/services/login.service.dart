@@ -717,4 +717,33 @@ Future<List<MealLog>> listMealLog() async {
       throw Exception('Error connecting to server: $e');
     }
   }
+
+ Future<String> addUserFeedback(int gymClassId, Map<String, Object> feedbackData) async {
+  final url = Uri.parse('$baseURL/apiGymUser/addUserFeedback/$userId');
+  try {
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ${await storage.read(key: 'token')}',
+      },
+      body: json.encode({
+        'gymClassId': feedbackData['gymClassId'],
+        'rating': feedbackData['rating'],
+        'comment': feedbackData['comment'],
+      }),
+    );
+
+    final decoded = json.decode(response.body);
+    if (response.statusCode == 200 && decoded['success'] == true) {
+      return 'Feedback añadido con éxito';
+    } else {
+      print(decoded['message']);
+      throw Exception(decoded['message'] ?? 'Error al añadir feedback');
+    }
+  } catch (e) {
+    throw Exception('Error conectando con el servidor: $e');
+  }
+}
 }

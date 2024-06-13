@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:bodysyncapp/models/exercise.dart';
 import 'package:bodysyncapp/models/gymClass.dart';
 import 'package:bodysyncapp/models/gymUser.dart';
@@ -35,8 +33,7 @@ class _GymUserScreenState extends State<GymUserScreen> {
   Future<GymUser?> _fetchGymUser() async {
     try {
       String userIdString = UserService.userId.toString();
-      GymUser response =
-          await UserService().getGymUserById();
+      GymUser response = await UserService().getGymUserById();
       return response;
     } catch (e) {
       print('Error al obtener el usuario: $e');
@@ -51,7 +48,8 @@ class _GymUserScreenState extends State<GymUserScreen> {
         _muscleClassEnrolledPeople = enrolledPeople;
       });
     } catch (e) {
-      print('Error al obtener el número de personas apuntadas a la clase de musculación: $e');
+      print(
+          'Error al obtener el número de personas apuntadas a la clase de musculación: $e');
     }
   }
 
@@ -71,7 +69,7 @@ class _GymUserScreenState extends State<GymUserScreen> {
               context.pushNamed(GymBrosScreen.name);
             },
           ),
-           IconButton(
+          IconButton(
             icon: const Icon(Icons.personal_injury),
             onPressed: () {
               context.pushNamed(MusclePainLogScreen.name);
@@ -106,7 +104,8 @@ class _GymUserScreenState extends State<GymUserScreen> {
         return Container(); // Placeholder
     }
   }
- Widget _buildCalendarAndAnnouncements() {
+
+  Widget _buildCalendarAndAnnouncements() {
     return FutureBuilder<GymUser?>(
       future: _gymUserFuture,
       builder: (context, snapshot) {
@@ -164,12 +163,15 @@ class _GymUserScreenState extends State<GymUserScreen> {
             lastDay: DateTime.utc(2024, 12, 31),
             selectedDayPredicate: (day) {
               // Verifica si el día está en la lista de días de asistencia y si no es un día pasado.
-              return gymUser.attendanceDays?.contains(day) ?? false && !isPastDay(day);
+              return gymUser.attendanceDays?.contains(day) ??
+                  false && !isPastDay(day);
             },
             eventLoader: (day) {
               List<dynamic> events = [];
               if (gymUser.attendanceDays?.contains(day) ?? false) {
-                events.add(Icon(Icons.check, color: Colors.green)); // Icono de checkmark verde para indicar asistencia
+                events.add(const Icon(Icons.check,
+                    color: Colors
+                        .green)); // Icono de checkmark verde para indicar asistencia
               }
               return events;
             },
@@ -183,7 +185,8 @@ class _GymUserScreenState extends State<GymUserScreen> {
                   }
                 });
                 try {
-                  await UserService().updateAttendanceDays(gymUser.attendanceDays!);
+                  await UserService()
+                      .updateAttendanceDays(gymUser.attendanceDays!);
                 } catch (e) {
                   print('Error actualizando días de asistencia: $e');
                 }
@@ -195,71 +198,70 @@ class _GymUserScreenState extends State<GymUserScreen> {
     );
   }
 
-
   bool isPastDay(DateTime day) {
     final now = DateTime.now();
     return day.isBefore(DateTime(now.year, now.month, now.day));
   }
 
-  
-
- Widget buildCalendarSection(GymUser gymUser) {
-  return Card(
-    elevation: 4,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(16),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text(
-            'Calendario de Asistencia',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.blue,
+  Widget buildCalendarSection(GymUser gymUser) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              'Calendario de Asistencia',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue,
+              ),
             ),
           ),
-        ),
-        TableCalendar(
-          calendarFormat: CalendarFormat.month,
-          focusedDay: DateTime.now(),
-          firstDay: DateTime.utc(2022, 1, 1),
-          lastDay: DateTime.utc(2024, 12, 31),
-          selectedDayPredicate: (day) {
-            // Verifica si el día está en la lista de días de asistencia y si no es un día pasado.
-            return gymUser.attendanceDays?.contains(day) ?? false && !isPastDay(day);
-          },
-          eventLoader: (day) {
-            List<dynamic> events = [];
-            if (gymUser.attendanceDays?.contains(day) ?? false) {
-              events.add('Asistencia al gimnasio');
-            }
-            return events;
-          },
-          onDaySelected: (selectedDay, focusedDay) async {
-            if (!isPastDay(selectedDay)) {
-              setState(() {
-                if (gymUser.attendanceDays?.contains(selectedDay) ?? false) {
-                  gymUser.attendanceDays?.remove(selectedDay);
-                } else {
-                  gymUser.attendanceDays?.add(selectedDay);
-                }
-              });
-              try {
-                await UserService().updateAttendanceDays(gymUser.attendanceDays!);
-              } catch (e) {
-                print('Error actualizando días de asistencia: $e');
+          TableCalendar(
+            calendarFormat: CalendarFormat.month,
+            focusedDay: DateTime.now(),
+            firstDay: DateTime.utc(2022, 1, 1),
+            lastDay: DateTime.utc(2024, 12, 31),
+            selectedDayPredicate: (day) {
+              // Verifica si el día está en la lista de días de asistencia y si no es un día pasado.
+              return gymUser.attendanceDays?.contains(day) ??
+                  false && !isPastDay(day);
+            },
+            eventLoader: (day) {
+              List<dynamic> events = [];
+              if (gymUser.attendanceDays?.contains(day) ?? false) {
+                events.add('Asistencia al gimnasio');
               }
-            }
-          },
-        ),
-      ],
-    ),
-  );
-}
+              return events;
+            },
+            onDaySelected: (selectedDay, focusedDay) async {
+              if (!isPastDay(selectedDay)) {
+                setState(() {
+                  if (gymUser.attendanceDays?.contains(selectedDay) ?? false) {
+                    gymUser.attendanceDays?.remove(selectedDay);
+                  } else {
+                    gymUser.attendanceDays?.add(selectedDay);
+                  }
+                });
+                try {
+                  await UserService()
+                      .updateAttendanceDays(gymUser.attendanceDays!);
+                } catch (e) {
+                  print('Error actualizando días de asistencia: $e');
+                }
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildAnnouncementsSection() {
     return Card(
@@ -326,132 +328,228 @@ class _GymUserScreenState extends State<GymUserScreen> {
     );
   }
 
-Widget _buildClassesContent(GymUser gymUser) {
-  return FutureBuilder<List<GymClass>>(
-    future: UserService().listGymClasses(),
-    builder: (context, snapshot) {
-      if (snapshot.connectionState == ConnectionState.waiting) {
-        return const Center(child: CircularProgressIndicator());
-      } else if (snapshot.hasError) {
-        return Center(child: Text('Error: ${snapshot.error}'));
-      } else {
-        final classes = snapshot.data!;
-        // Filtra las clases inscritas por el usuario
-        final enrolledClasses = gymUser.enrolledClasses ?? [];
-        final List<GymClass> userEnrolledClasses = classes.where((gymClass) =>
-            enrolledClasses.any((enrolledClass) => enrolledClass.id == gymClass.id)).toList();
+  Widget _buildClassesContent(GymUser gymUser) {
+    return FutureBuilder<List<GymClass>>(
+      future: UserService().listGymClasses(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else {
+          final classes = snapshot.data ?? [];
+          final enrolledClasses = gymUser.enrolledClasses ?? [];
+          final userEnrolledClasses = classes
+              .where((gymClass) => enrolledClasses.any((enrolledClass) => enrolledClass.id == gymClass.id))
+              .toList();
 
-        // Filtra las nuevas clases disponibles
-        final List<GymClass> newClasses = classes.where((gymClass) =>
-            !enrolledClasses.any((enrolledClass) => enrolledClass.id == gymClass.id)).toList();
+          final newClasses = classes
+              .where((gymClass) => !enrolledClasses.any((enrolledClass) => enrolledClass.id == gymClass.id))
+              .toList();
 
-        return Card(
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (_muscleClassEnrolledPeople != null)
-                ListTile(
-                  title: const Text(
-                    'Musculación',
-                    style: TextStyle(color: Colors.black87),
-                  ),
-                  trailing: Text(
-                    '$_muscleClassEnrolledPeople personas apuntadas',
-                    style: const TextStyle(color: Colors.black54),
-                  ),
-                ),
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  'Clases del Usuario',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
-                  ),
-                ),
-              ),
-              // Mostrar las clases inscritas por el usuario
-              if (userEnrolledClasses.isNotEmpty)
-                ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: userEnrolledClasses.length,
-                  itemBuilder: (context, index) {
-                    final gymClass = userEnrolledClasses[index];
-                    return ListTile(
-                      title: Text(gymClass.name,
-                          style: const TextStyle(color: Colors.black87)),
-                      subtitle: Text(gymClass.description,
-                          style: const TextStyle(color: Colors.black54)),
-                      trailing: Text('Fecha: ${gymClass.startDate}',
-                          style: const TextStyle(color: Colors.black54)),
-                    );
-                  },
-                ),
-              // Mostrar mensaje si no hay clases inscritas
-              if (userEnrolledClasses.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Center(
+          return Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.all(16.0),
                     child: Text(
-                      'No se encontraron clases inscritas.',
-                      style: TextStyle(fontSize: 16.0, color: Colors.black87),
-                    ),
-                  ),
-                ),
-              const SizedBox(height: 20),
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  'Nuevas Clases Disponibles',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
-                  ),
-                ),
-              ),
-              // Mostrar las nuevas clases disponibles
-              if (newClasses.isNotEmpty)
-                ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: newClasses.length,
-                  itemBuilder: (context, index) {
-                    final gymClass = newClasses[index];
-                    return ListTile(
-                      title: Text(gymClass.name,
-                          style: const TextStyle(color: Colors.black87)),
-                      trailing: ElevatedButton(
-                        onPressed: () {
-                          UserService().addUserClass(gymClass.id);
-                        },
-                        child: const Text('Inscribirse'),
+                      'Clases del Usuario',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
                       ),
-                    );
-                  },
-                ),
-              // Mostrar mensaje si no hay nuevas clases disponibles
-              if (newClasses.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Center(
-                    child: Text(
-                      'No hay nuevas clases disponibles.',
-                      style: TextStyle(fontSize: 16.0, color: Colors.black87),
                     ),
                   ),
+                  if (userEnrolledClasses.isNotEmpty)
+                    ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: userEnrolledClasses.length,
+                      itemBuilder: (context, index) {
+                        final gymClass = userEnrolledClasses[index];
+                        return ListTile(
+                          title: Text(gymClass.name, style: const TextStyle(color: Colors.black87)),
+                          subtitle: Text(gymClass.description, style: const TextStyle(color: Colors.black54)),
+                          trailing: ElevatedButton(
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => _buildFeedbackModal(context, gymClass),
+                              );
+                            },
+                            child: const Text('Añadir Feedback'),
+                          ),
+                        );
+                      },
+                    ),
+                  if (userEnrolledClasses.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Center(
+                        child: Text(
+                          'No se encontraron clases inscritas.',
+                          style: TextStyle(fontSize: 16.0, color: Colors.black87),
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 20),
+                  const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text(
+                      'Nuevas Clases Disponibles',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ),
+                  if (newClasses.isNotEmpty)
+                    ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: newClasses.length,
+                      itemBuilder: (context, index) {
+                        final gymClass = newClasses[index];
+                        return ListTile(
+                          title: Text(gymClass.name, style: const TextStyle(color: Colors.black87)),
+                          trailing: ElevatedButton(
+                            onPressed: () {
+                              // Aquí podrías manejar la inscripción del usuario a la clase
+                            },
+                            child: const Text('Inscribirse'),
+                          ),
+                        );
+                      },
+                    ),
+                  if (newClasses.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Center(
+                        child: Text(
+                          'No hay nuevas clases disponibles.',
+                          style: TextStyle(fontSize: 16.0, color: Colors.black87),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
+        }
+      },
+    );
+  }
+
+  Widget _buildFeedbackModal(BuildContext context, GymClass gymClass) {
+    double rating = 0;
+    String comment = '';
+
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return AlertDialog(
+          title: Text('Feedback para ${gymClass.name}'),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Feedback para ${gymClass.name}',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-            ],
+                const SizedBox(height: 20),
+                // Rating stars
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    IconButton(
+                      icon: Icon(Icons.star, color: rating >= 1 ? Colors.yellow : Colors.grey),
+                      onPressed: () {
+                        setState(() {
+                          rating = 1;
+                        });
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.star, color: rating >= 2 ? Colors.yellow : Colors.grey),
+                      onPressed: () {
+                        setState(() {
+                          rating = 2;
+                        });
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.star, color: rating >= 3 ? Colors.yellow : Colors.grey),
+                      onPressed: () {
+                        setState(() {
+                          rating = 3;
+                        });
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.star, color: rating >= 4 ? Colors.yellow : Colors.grey),
+                      onPressed: () {
+                        setState(() {
+                          rating = 4;
+                        });
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.star, color: rating >= 5 ? Colors.yellow : Colors.grey),
+                      onPressed: () {
+                        setState(() {
+                          rating = 5;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  decoration: const InputDecoration(
+                    hintText: 'Escribe tu comentario...',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 4,
+                  onChanged: (value) {
+                    comment = value;
+                  },
+                ),
+              ],
+            ),
           ),
+          actions: [
+            ElevatedButton(
+              onPressed: () async {
+                try {
+                  final feedbackData = {
+                    'gymClassId': gymClass.id,
+                    'rating': rating.toInt(), // Asegúrate de convertir rating a int si es necesario
+                    'comment': comment,
+                  };
+                  final message = await UserService().addUserFeedback(gymClass.id, feedbackData);
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text(message)));
+                  Navigator.pop(context); 
+                } catch (e) {
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text('Error: $e')));
+                }
+              },
+              child: const Text('Enviar'),
+            ),
+          ],
         );
-      }
-    },
-  );
-}
+      },
+    );
+  }
 
 
   Widget _buildTrainingLogSection() {
@@ -478,149 +576,148 @@ Widget _buildClassesContent(GymUser gymUser) {
     );
   }
 
- Widget _buildTrainingLogContent(
-  GymUser gymUser, {
-  String? muscleGroupFilter,
-  String? necessaryEquipmentFilter,
-}) {
-  return FutureBuilder<List<Exercise>>(
-    future: UserService().listExercises(),
-    builder: (context, snapshot) {
-      if (snapshot.connectionState == ConnectionState.waiting) {
-        return const Center(child: CircularProgressIndicator());
-      } else if (snapshot.hasError) {
-        return Center(child: Text('Error: ${snapshot.error}'));
-      } else {
-        final allExercises = snapshot.data ?? [];
-        List<Exercise> userExercises = gymUser.exercises ?? [];
+  Widget _buildTrainingLogContent(
+    GymUser gymUser, {
+    String? muscleGroupFilter,
+    String? necessaryEquipmentFilter,
+  }) {
+    return FutureBuilder<List<Exercise>>(
+      future: UserService().listExercises(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else {
+          final allExercises = snapshot.data ?? [];
+          List<Exercise> userExercises = gymUser.exercises ?? [];
 
-        if (muscleGroupFilter != null && muscleGroupFilter.isNotEmpty) {
-          userExercises = userExercises
-              .where((exercise) => exercise.muscleGroup == muscleGroupFilter)
-              .toList();
-        }
+          if (muscleGroupFilter != null && muscleGroupFilter.isNotEmpty) {
+            userExercises = userExercises
+                .where((exercise) => exercise.muscleGroup == muscleGroupFilter)
+                .toList();
+          }
 
-        if (necessaryEquipmentFilter != null &&
-            necessaryEquipmentFilter.isNotEmpty) {
-          userExercises = userExercises
-              .where((exercise) =>
-                  exercise.necessaryEquipment == necessaryEquipmentFilter)
-              .toList();
-        }
+          if (necessaryEquipmentFilter != null &&
+              necessaryEquipmentFilter.isNotEmpty) {
+            userExercises = userExercises
+                .where((exercise) =>
+                    exercise.necessaryEquipment == necessaryEquipmentFilter)
+                .toList();
+          }
 
-        // Filter exercises for carousel
-        List<Exercise> carouselExercises = allExercises;
-        if (muscleGroupFilter != null && muscleGroupFilter.isNotEmpty) {
-          carouselExercises = carouselExercises
-              .where((exercise) => exercise.muscleGroup == muscleGroupFilter)
-              .toList();
-        }
+          // Filter exercises for carousel
+          List<Exercise> carouselExercises = allExercises;
+          if (muscleGroupFilter != null && muscleGroupFilter.isNotEmpty) {
+            carouselExercises = carouselExercises
+                .where((exercise) => exercise.muscleGroup == muscleGroupFilter)
+                .toList();
+          }
 
-        if (necessaryEquipmentFilter != null &&
-            necessaryEquipmentFilter.isNotEmpty) {
-          carouselExercises = carouselExercises
-              .where((exercise) =>
-                  exercise.necessaryEquipment == necessaryEquipmentFilter)
-              .toList();
-        }
+          if (necessaryEquipmentFilter != null &&
+              necessaryEquipmentFilter.isNotEmpty) {
+            carouselExercises = carouselExercises
+                .where((exercise) =>
+                    exercise.necessaryEquipment == necessaryEquipmentFilter)
+                .toList();
+          }
 
-        return Card(
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Ejercicios',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                if (carouselExercises.isNotEmpty)
-                  SizedBox(
-                    height: 250,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: carouselExercises.map((exercise) {
-                          return Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: _buildExerciseCard(exercise),
-                          );
-                        }).toList(),
-                      ),
+          return Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Ejercicios',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).primaryColor,
                     ),
                   ),
-                const SizedBox(height: 16),
-                if (userExercises.isNotEmpty)
-                  ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: userExercises.length,
-                    itemBuilder: (context, index) {
-                      final exercise = userExercises[index];
-                      return _buildUserExerciseTile(exercise);
-                    },
-                  ),
-                if (userExercises.isEmpty && allExercises.isEmpty)
-                  const Text(
-                    'No se encontraron ejercicios.',
-                    style: TextStyle(fontSize: 20.0, color: Colors.redAccent),
-                  ),
-              ],
+                  const SizedBox(height: 16),
+                  if (carouselExercises.isNotEmpty)
+                    SizedBox(
+                      height: 250,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: carouselExercises.map((exercise) {
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8.0),
+                              child: _buildExerciseCard(exercise),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 16),
+                  if (userExercises.isNotEmpty)
+                    ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: userExercises.length,
+                      itemBuilder: (context, index) {
+                        final exercise = userExercises[index];
+                        return _buildUserExerciseTile(exercise);
+                      },
+                    ),
+                  if (userExercises.isEmpty && allExercises.isEmpty)
+                    const Text(
+                      'No se encontraron ejercicios.',
+                      style: TextStyle(fontSize: 20.0, color: Colors.redAccent),
+                    ),
+                ],
+              ),
             ),
-          ),
-        );
-      }
-    },
-  );
-}
-
+          );
+        }
+      },
+    );
+  }
 
   Widget _buildExerciseCard(Exercise exercise) {
-  return Card(
-    margin: const EdgeInsets.symmetric(horizontal: 8),
-    elevation: 2,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(16),
-    ),
-    child: Container(
-      width: 180,
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.fitness_center, color: Colors.blue),
-          const SizedBox(height: 8),
-          Text(
-            exercise.name ?? '',
-            style: const TextStyle(
-              color: Colors.black87,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Flexible( // Wrap the description text with Flexible
-            child: Text(
-              'Descripción: ${exercise.description}\n'
-              'Grupo muscular: ${exercise.muscleGroup}\n'
-              'Equipo necesario: ${exercise.necessaryEquipment}',
-              style: const TextStyle(color: Colors.black54),
-            ),
-          ),
-        ],
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
       ),
-    ),
-  );
-}
-
+      child: Container(
+        width: 180,
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.fitness_center, color: Colors.blue),
+            const SizedBox(height: 8),
+            Text(
+              exercise.name ?? '',
+              style: const TextStyle(
+                color: Colors.black87,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Flexible(
+              // Wrap the description text with Flexible
+              child: Text(
+                'Descripción: ${exercise.description}\n'
+                'Grupo muscular: ${exercise.muscleGroup}\n'
+                'Equipo necesario: ${exercise.necessaryEquipment}',
+                style: const TextStyle(color: Colors.black54),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _buildUserExerciseTile(Exercise exercise) {
     return Card(
@@ -646,212 +743,211 @@ Widget _buildClassesContent(GymUser gymUser) {
       ),
     );
   }
-  
-void _showAddMealDialog() async {
-  try {
-    // Llama a listMealLog para obtener la lista de comidas
-    List<MealLog> mealLogList = await UserService().listMealLog();
 
-    // Variable para almacenar la comida seleccionada
-    MealLog? selectedMeal;
+  void _showAddMealDialog() async {
+    try {
+      // Llama a listMealLog para obtener la lista de comidas
+      List<MealLog> mealLogList = await UserService().listMealLog();
 
-    // Crea una lista de elementos ListTile para mostrar en el diálogo
-    List<Widget> mealListTiles = mealLogList.map((meal) {
-      return ListTile(
-        title: Text(meal.mealDescription),
-        subtitle: Text(meal.caloriesConsumed.toString()),
-        onTap: () {
-          // Actualiza la comida seleccionada
-          selectedMeal = meal;
-        },
-      );
-    }).toList();
+      // Variable para almacenar la comida seleccionada
+      MealLog? selectedMeal;
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Agregar Comida'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Column(
-                  children: mealListTiles, // Mostrar la lista de comidas aquí
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Cierra el diálogo
-              },
-              child: Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (selectedMeal != null) {
-                  try {
-                    // Llamar al servicio addMealLog
-                    await UserService().addMealLog( selectedMeal!.id);
-                    Navigator.of(context).pop(); // Cierra el diálogo
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text('Comida añadida con éxito'),
-                    ));
-                  } catch (e) {
-                    // Manejar errores aquí, como mostrar un mensaje de error al usuario
-                    print('Error: $e');
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text('Error: $e'),
-                    ));
-                  }
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text('Por favor seleccione una comida'),
-                  ));
-                }
-              },
-              child: Text('Guardar'),
-            ),
-          ],
+      // Crea una lista de elementos ListTile para mostrar en el diálogo
+      List<Widget> mealListTiles = mealLogList.map((meal) {
+        return ListTile(
+          title: Text(meal.mealDescription),
+          subtitle: Text(meal.caloriesConsumed.toString()),
+          onTap: () {
+            // Actualiza la comida seleccionada
+            selectedMeal = meal;
+          },
         );
-      },
-    );
-  } catch (e) {
-    // Manejar errores aquí, como mostrar un mensaje de error al usuario
-    print('Error: $e');
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('Error: $e'),
-    ));
-  }
-}
+      }).toList();
 
-Widget _buildNutritionPlansSection() {
-  return FutureBuilder<GymUser?>(
-    future: _gymUserFuture,
-    builder: (context, snapshot) {
-      if (snapshot.connectionState == ConnectionState.waiting) {
-        return const Center(child: CircularProgressIndicator());
-      } else if (snapshot.hasError) {
-        return Center(child: Text('Error: ${snapshot.error}'));
-      } else {
-        final gymUser = snapshot.data;
-        if (gymUser == null) {
-          return const Center(
-            child: Text(
-              'No se encontraron datos del usuario del gimnasio.',
-              style: TextStyle(fontSize: 16.0),
-            ),
-          );
-        }
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildNutritionPlansContent(gymUser),
-            SizedBox(height: 20),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  _showAddMealDialog(); // Llama al método para mostrar la ventana emergente.
-                },
-                child: Text('Agregar Comida'),
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Agregar Comida'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Column(
+                    children: mealListTiles, // Mostrar la lista de comidas aquí
+                  ),
+                ],
               ),
             ),
-          ],
-        );
-      }
-    },
-  );
-}
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Cierra el diálogo
+                },
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  if (selectedMeal != null) {
+                    try {
+                      // Llamar al servicio addMealLog
+                      await UserService().addMealLog(selectedMeal!.id);
+                      Navigator.of(context).pop(); // Cierra el diálogo
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text('Comida añadida con éxito'),
+                      ));
+                    } catch (e) {
+                      // Manejar errores aquí, como mostrar un mensaje de error al usuario
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text('Error: $e'),
+                      ));
+                    }
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text('Por favor seleccione una comida'),
+                    ));
+                  }
+                },
+                child: const Text('Guardar'),
+              ),
+            ],
+          );
+        },
+      );
+    } catch (e) {
+      // Manejar errores aquí, como mostrar un mensaje de error al usuario
+      print('Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Error: $e'),
+      ));
+    }
+  }
 
-Widget _buildNutritionPlansContent(GymUser gymUser) {
-  return SingleChildScrollView(
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text(
-            'Nutrición y Dieta',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.blue,
+  Widget _buildNutritionPlansSection() {
+    return FutureBuilder<GymUser?>(
+      future: _gymUserFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else {
+          final gymUser = snapshot.data;
+          if (gymUser == null) {
+            return const Center(
+              child: Text(
+                'No se encontraron datos del usuario del gimnasio.',
+                style: TextStyle(fontSize: 16.0),
+              ),
+            );
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildNutritionPlansContent(gymUser),
+              const SizedBox(height: 20),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    _showAddMealDialog(); // Llama al método para mostrar la ventana emergente.
+                  },
+                  child: const Text('Agregar Comida'),
+                ),
+              ),
+            ],
+          );
+        }
+      },
+    );
+  }
+
+  Widget _buildNutritionPlansContent(GymUser gymUser) {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              'Nutrición y Dieta',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue,
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 10),
-        _buildNutritionSummary(gymUser),
-        const SizedBox(height: 20),
-        _buildMealLogs(gymUser),
-      ],
-    ),
-  );
-}
-
-Widget _buildNutritionSummary(GymUser gymUser) {
-  if (gymUser.nutritionPlans == null || gymUser.nutritionPlans!.isEmpty) {
-    return const Center(
-      child: Text(
-        'No hay planes de nutrición disponibles.',
-        style: TextStyle(fontSize: 16.0, color: Colors.black87),
+          const SizedBox(height: 10),
+          _buildNutritionSummary(gymUser),
+          const SizedBox(height: 20),
+          _buildMealLogs(gymUser),
+        ],
       ),
-    );
-  } else {
-    return ExpansionTile(
-      title: const Text(
-        'Planes de Nutrición',
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      children: [
-        Column(
-          children: gymUser.nutritionPlans!.map((plan) {
-            return ListTile(
-              title: Text(plan.name),
-              subtitle: Text(plan.description),
-            );
-          }).toList(),
-        ),
-      ],
     );
   }
-}
 
-Widget _buildMealLogs(GymUser gymUser) {
-  if (gymUser.mealLogs == null || gymUser.mealLogs!.isEmpty) {
-    return const Center(
-      child: Text(
-        'No hay registros de comidas.',
-        style: TextStyle(fontSize: 16.0, color: Colors.black87),
-      ),
-    );
-  } else {
-    return ExpansionTile(
-      title: const Text(
-        'Registros de Comidas',
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
+  Widget _buildNutritionSummary(GymUser gymUser) {
+    if (gymUser.nutritionPlans == null || gymUser.nutritionPlans!.isEmpty) {
+      return const Center(
+        child: Text(
+          'No hay planes de nutrición disponibles.',
+          style: TextStyle(fontSize: 16.0, color: Colors.black87),
         ),
-      ),
-      children: [
-        Column(
-          children: gymUser.mealLogs!.map((log) {
-            return ListTile(
-              title: Text(log.mealDescription),
-              subtitle: Text(log.caloriesConsumed.toString()),
-            );
-          }).toList(),
+      );
+    } else {
+      return ExpansionTile(
+        title: const Text(
+          'Planes de Nutrición',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-      ],
-    );
+        children: [
+          Column(
+            children: gymUser.nutritionPlans!.map((plan) {
+              return ListTile(
+                title: Text(plan.name),
+                subtitle: Text(plan.description),
+              );
+            }).toList(),
+          ),
+        ],
+      );
+    }
   }
-}
+
+  Widget _buildMealLogs(GymUser gymUser) {
+    if (gymUser.mealLogs == null || gymUser.mealLogs!.isEmpty) {
+      return const Center(
+        child: Text(
+          'No hay registros de comidas.',
+          style: TextStyle(fontSize: 16.0, color: Colors.black87),
+        ),
+      );
+    } else {
+      return ExpansionTile(
+        title: const Text(
+          'Registros de Comidas',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        children: [
+          Column(
+            children: gymUser.mealLogs!.map((log) {
+              return ListTile(
+                title: Text(log.mealDescription),
+                subtitle: Text(log.caloriesConsumed.toString()),
+              );
+            }).toList(),
+          ),
+        ],
+      );
+    }
+  }
 
   Widget _buildAchievementsSection() {
     return FutureBuilder<GymUser?>(
@@ -926,127 +1022,127 @@ Widget _buildMealLogs(GymUser gymUser) {
     );
   }
 
- Widget _buildCustomRoutinesSection() {
-  return FutureBuilder<GymUser?>(
-    future: _gymUserFuture,
-    builder: (context, snapshot) {
-      if (snapshot.connectionState == ConnectionState.waiting) {
-        return const Center(child: CircularProgressIndicator());
-      } else if (snapshot.hasError) {
-        return Center(child: Text('Error: ${snapshot.error}'));
-      } else {
-        final gymUser = snapshot.data;
-        if (gymUser == null) {
-          return const Center(
-            child: Text(
-              'No se encontraron datos del usuario del gimnasio.',
-              style: TextStyle(fontSize: 16.0),
-            ),
-          );
-        }
-        return _buildCustomRoutinesContent(gymUser);
-      }
-    },
-  );
-}
-
-Widget _buildCustomRoutinesContent(GymUser gymUser) {
-  return Card(
-    elevation: 4,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(16),
-    ),
-    child: Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Rutinas Personalizadas',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.blue,
-            ),
-          ),
-          const SizedBox(height: 16),
-          if (gymUser.routines != null && gymUser.routines!.isNotEmpty)
-            Column(
-              children: List.generate(
-                gymUser.routines!.length,
-                (index) {
-                  final routine = gymUser.routines![index];
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Rutina ${index + 1}',
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Días por semana: ${routine.daysPerWeek}',
-                        style: const TextStyle(
-                          color: Colors.black54,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Ejercicios:',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Column(
-                        children: routine.exerciseList
-                            .map(
-                              (exercise) => Padding(
-                                padding: const EdgeInsets.only(left: 16),
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.fitness_center, color: Colors.blue),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      exercise.name ?? 'Nombre no disponible',
-                                      style: const TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                            .toList(),
-                      ),
-                      const Divider(), // Añade un separador entre las rutinas
-                      const SizedBox(height: 16),
-                    ],
-                  );
-                },
-              ),
-            ),
-          if (gymUser.routines == null || gymUser.routines!.isEmpty)
-            const Center(
+  Widget _buildCustomRoutinesSection() {
+    return FutureBuilder<GymUser?>(
+      future: _gymUserFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else {
+          final gymUser = snapshot.data;
+          if (gymUser == null) {
+            return const Center(
               child: Text(
-                'No se encontraron rutinas personalizadas.',
-                style: TextStyle(fontSize: 16.0, color: Colors.black87),
+                'No se encontraron datos del usuario del gimnasio.',
+                style: TextStyle(fontSize: 16.0),
+              ),
+            );
+          }
+          return _buildCustomRoutinesContent(gymUser);
+        }
+      },
+    );
+  }
+
+  Widget _buildCustomRoutinesContent(GymUser gymUser) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Rutinas Personalizadas',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue,
               ),
             ),
-        ],
+            const SizedBox(height: 16),
+            if (gymUser.routines != null && gymUser.routines!.isNotEmpty)
+              Column(
+                children: List.generate(
+                  gymUser.routines!.length,
+                  (index) {
+                    final routine = gymUser.routines![index];
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Rutina ${index + 1}',
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Días por semana: ${routine.daysPerWeek}',
+                          style: const TextStyle(
+                            color: Colors.black54,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Ejercicios:',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Column(
+                          children: routine.exerciseList
+                              .map(
+                                (exercise) => Padding(
+                                  padding: const EdgeInsets.only(left: 16),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.fitness_center,
+                                          color: Colors.blue),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        exercise.name ?? 'Nombre no disponible',
+                                        style: const TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                        const Divider(), // Añade un separador entre las rutinas
+                        const SizedBox(height: 16),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            if (gymUser.routines == null || gymUser.routines!.isEmpty)
+              const Center(
+                child: Text(
+                  'No se encontraron rutinas personalizadas.',
+                  style: TextStyle(fontSize: 16.0, color: Colors.black87),
+                ),
+              ),
+          ],
+        ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   Widget _buildNewsSection() {
     // Placeholder para sección de noticias

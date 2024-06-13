@@ -551,7 +551,6 @@ class _GymUserScreenState extends State<GymUserScreen> {
     );
   }
 
-
   Widget _buildTrainingLogSection() {
     return FutureBuilder<GymUser?>(
       future: _gymUserFuture,
